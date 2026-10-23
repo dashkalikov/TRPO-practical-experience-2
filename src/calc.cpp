@@ -50,8 +50,10 @@ std::optional<double> factorial(double value)
     if (value < 0.0)
         return std::nullopt;
 
-    // Проверяем, что значение целое
-    if (value != std::floor(value))
+    // Проверяем, что значение близко к целому (с учетом погрешности для чисел с плавающей
+    // точкой)
+    double rounded = std::round(value);
+    if (std::abs(value - rounded) > 1e-6)
         return std::nullopt;
 
     // Проверяем, что значение не слишком большое (факториал растет очень быстро)
@@ -60,7 +62,8 @@ std::optional<double> factorial(double value)
 
     // Вычисляем факториал
     double result = 1.0;
-    for (int i = 1; i <= static_cast<int>(value); ++i)
+    int int_value = static_cast<int>(std::round(value)); // Используем round для корректного округления
+    for (int i = 1; i <= int_value; ++i)
     {
         result *= i;
         // Проверяем на переполнение
@@ -87,6 +90,8 @@ std::optional<double> eval_line(const std::string &line)
                 char extra = 0;
                 if (is >> extra)
                     return std::nullopt; // Лишние символы
+                if (std::isnan(value))
+                    return std::nullopt; // NaN недопустим
                 return square_root(value);
             }
             return std::nullopt; // Нет значения после sqrt
@@ -99,6 +104,8 @@ std::optional<double> eval_line(const std::string &line)
                 char extra = 0;
                 if (is >> extra)
                     return std::nullopt; // Лишние символы
+                if (std::isnan(value))
+                    return std::nullopt; // NaN недопустим
                 return factorial(value);
             }
             return std::nullopt; // Нет значения после factorial
@@ -112,6 +119,10 @@ std::optional<double> eval_line(const std::string &line)
     double a = 0.0, b = 0.0;
     char op = 0;
     if (!(is >> a >> op >> b))
+        return std::nullopt;
+
+    // Проверяем на NaN в операндах
+    if (std::isnan(a) || std::isnan(b))
         return std::nullopt;
 
     char extra = 0;

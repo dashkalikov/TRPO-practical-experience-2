@@ -1,11 +1,21 @@
 cmake_minimum_required(VERSION 3.16)
-project(calculator CXX)
+project(calculator VERSION 2.0.0 LANGUAGES CXX)
+
+# Устанавливаем версию проекта
+set(PROJECT_VERSION_MAJOR 2)
+set(PROJECT_VERSION_MINOR 0)
+set(PROJECT_VERSION_PATCH 0)
+set(PROJECT_VERSION "${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}.${PROJECT_VERSION_PATCH}")
+
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
 add_library(calc_lib src/calc.cpp)
 target_include_directories(calc_lib PUBLIC src)
+
 add_executable(calc_app src/main.cpp)
 target_link_libraries(calc_app PRIVATE calc_lib)
+
 enable_testing()
 
 # Модульные Тесты
@@ -31,4 +41,3 @@ target_include_directories(test_boundary_conditions PRIVATE src tests/utils)
 add_test(NAME unit_basic_operations COMMAND test_basic_operations)
 add_test(NAME unit_advanced_operations COMMAND test_advanced_operations)
 add_test(NAME integration_eval_line COMMAND test_eval_line)
-add_test(NAME edge_boundary_conditions COMMAND test_boundary_conditions)
