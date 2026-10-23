@@ -1,17 +1,17 @@
 /**
- * @file test_advanced_operations.cpp
- * @brief Модульные тесты для продвинутых математических операций
+ * @file test_eval_line.cpp
+ * @brief Интеграционные тесты для функции eval_line
  * @author Calculator Team
  *
- * Этот файл содержит тесты для сложных математических операций:
- * - Деление (divi) с проверкой деления на ноль
- * - Остаток от деления (mod) с проверкой деления на ноль
- * - Возведение в степень (powd) с проверкой на бесконечность
- * - Логарифм (logb) с проверкой корректности аргументов
- * - Квадратный корень (square_root) с проверкой отрицательных значений
- * - Факториал (factorial) с проверкой целых чисел и переполнения
+ * Этот файл содержит интеграционные тесты для функции eval_line,
+ * которая парсит и вычисляет математические выражения:
  *
- * Тесты покрывают как успешные случаи, так и граничные условия.
+ * - Базовые операции: +, -, *, /, %, ^, l
+ * - Унарные операции: sqrt, factorial
+ * - Обработка некорректных выражений
+ * - Проверка граничных случаев и ошибок
+ *
+ * Тесты проверяют корректность парсинга строк и вычисления результатов.
  */
 
 #include "../utils/test_utils.h"
@@ -20,7 +20,7 @@
 #include <cmath>
 
 /**
- * @brief Главная функция для запуска тестов продвинутых операций
+ * @brief Главная функция для запуска интеграционных тестов
  * @return Количество неудачных тестов
  */
 int main()
@@ -28,220 +28,143 @@ int main()
     int failures = 0;
     int checks = 0;
 
-    std::cout << "=== Модульные тесты: Продвинутые операции ===\n";
+    std::cout << "=== Интеграционные тесты: eval_line ===\n";
+    std::cout << "=== Интеграционные тесты: calculator::eval_line ===\n";
 
-    // Тесты для функции divi
-    RUN_TEST("divi_normal", [](test_utils::TestContext &ctx)
-             {
-        ctx.expect_optional_equal(calculator::divi(10.0, 2.0), 5.0);
-        ctx.expect_optional_equal(calculator::divi(15.0, 3.0), 5.0);
-        ctx.expect_optional_equal(calculator::divi(7.0, 2.0), 3.5); });
+    // Тесты для корректных выражений
 
-    RUN_TEST("divi_negative", [](test_utils::TestContext &ctx)
+    RUN_TEST("calculator::eval_line_basic_operations", [](test_utils::TestContext &ctx)
              {
-        ctx.expect_optional_equal(calculator::divi(-10.0, 2.0), -5.0);
-        ctx.expect_optional_equal(calculator::divi(10.0, -2.0), -5.0);
-        ctx.expect_optional_equal(calculator::divi(-10.0, -2.0), 5.0); });
+        ctx.expect_optional_equal(calculator::eval_line("3 + 4"), 7.0);
+        ctx.expect_optional_equal(calculator::eval_line("10 - 3"), 7.0);
+        ctx.expect_optional_equal(calculator::eval_line("2 * 5"), 10.0);
+        ctx.expect_optional_equal(calculator::eval_line("15 / 3"), 5.0); });
 
-    RUN_TEST("divi_by_zero", [](test_utils::TestContext &ctx)
+    RUN_TEST("calculator::eval_line_advanced_operations", [](test_utils::TestContext &ctx)
              {
-        ctx.expect_nullopt(calculator::divi(5.0, 0.0));
-        ctx.expect_nullopt(calculator::divi(-5.0, 0.0));
-        ctx.expect_nullopt(calculator::divi(0.0, 0.0)); });
+        ctx.expect_optional_equal(calculator::eval_line("5 % 2"), std::fmod(5.0, 2.0));
+        ctx.expect_optional_equal(calculator::eval_line("2 ^ 3"), 8.0);
+        ctx.expect_optional_equal(calculator::eval_line("16 l 2"), 4.0); });
 
-    RUN_TEST("divi_decimal", [](test_utils::TestContext &ctx)
+    RUN_TEST("calculator::eval_line_sqrt_operations", [](test_utils::TestContext &ctx)
              {
-        ctx.expect_optional_equal(calculator::divi(1.0, 3.0), 1.0/3.0);
-        ctx.expect_optional_equal(calculator::divi(0.5, 0.25), 2.0);
-        ctx.expect_optional_equal(calculator::divi(0.1, 0.01), 10.0); });
+        ctx.expect_optional_equal(calculator::eval_line("sqrt 4"), 2.0);
+        ctx.expect_optional_equal(calculator::eval_line("sqrt 9"), 3.0);
+        ctx.expect_optional_equal(calculator::eval_line("sqrt 16"), 4.0);
+        ctx.expect_optional_equal(calculator::eval_line("sqrt 0"), 0.0);
+        ctx.expect_optional_equal(calculator::eval_line("sqrt 2.25"), 1.5); });
 
-    // Тесты для функции mod
-    RUN_TEST("mod_normal", [](test_utils::TestContext &ctx)
+    RUN_TEST("calculator::eval_line_factorial_operations", [](test_utils::TestContext &ctx)
              {
-        ctx.expect_optional_equal(calculator::mod(7.5, 2.0), 1.5);
-        ctx.expect_optional_equal(calculator::mod(10.0, 3.0), 1.0);
-        ctx.expect_optional_equal(calculator::mod(15.0, 4.0), 3.0); });
-
-    RUN_TEST("mod_negative", [](test_utils::TestContext &ctx)
-             {
-        ctx.expect_optional_equal(calculator::mod(-7.5, 2.0), -1.5);
-        ctx.expect_optional_equal(calculator::mod(7.5, -2.0), 1.5);
-        ctx.expect_optional_equal(calculator::mod(-7.5, -2.0), -1.5); });
-
-    RUN_TEST("mod_by_zero", [](test_utils::TestContext &ctx)
-             {
-        ctx.expect_nullopt(calculator::mod(5.0, 0.0));
-        ctx.expect_nullopt(calculator::mod(-5.0, 0.0));
-        ctx.expect_nullopt(calculator::mod(0.0, 0.0)); });
-
-    RUN_TEST("mod_decimal", [](test_utils::TestContext &ctx)
-             {
-        ctx.expect_optional_equal(calculator::mod(5.7, 2.1), std::fmod(5.7, 2.1));
-        ctx.expect_optional_equal(calculator::mod(0.5, 0.3), std::fmod(0.5, 0.3)); });
-
-    // Тесты для функции powd
-    RUN_TEST("powd_normal", [](test_utils::TestContext &ctx)
-             {
-        ctx.expect_optional_equal(calculator::powd(2.0, 5.0), 32.0);
-        ctx.expect_optional_equal(calculator::powd(3.0, 2.0), 9.0);
-        ctx.expect_optional_equal(calculator::powd(4.0, 0.5), 2.0); });
-
-    RUN_TEST("powd_fractional", [](test_utils::TestContext &ctx)
-             {
-        ctx.expect_optional_equal(calculator::powd(9.0, -0.5), 1.0 / 3.0);
-        ctx.expect_optional_equal(calculator::powd(8.0, 1.0/3.0), 2.0);
-        ctx.expect_optional_equal(calculator::powd(16.0, 0.25), 2.0); });
-
-    RUN_TEST("powd_invalid", [](test_utils::TestContext &ctx)
-             {
-                 ctx.expect_nullopt(calculator::powd(-2.0, 0.5)); // Корень из отрицательного числа
-                 ctx.expect_nullopt(calculator::powd(0.0, -1.0)); // Деление на ноль
-                 ctx.expect_nullopt(calculator::powd(-1.0, 0.5)); // Корень из отрицательного числа
+                 ctx.expect_optional_equal(calculator::eval_line("factorial 0"), 1.0);    // 0! = 1
+                 ctx.expect_optional_equal(calculator::eval_line("factorial 1"), 1.0);    // 1! = 1
+                 ctx.expect_optional_equal(calculator::eval_line("factorial 3"), 6.0);    // 3! = 6
+                 ctx.expect_optional_equal(calculator::eval_line("factorial 5"), 120.0);  // 5! = 120
+                 ctx.expect_optional_equal(calculator::eval_line("factorial 7"), 5040.0); // 7! = 5040
              });
 
-    RUN_TEST("powd_zero", [](test_utils::TestContext &ctx)
+    RUN_TEST("calculator::eval_line_negative_numbers", [](test_utils::TestContext &ctx)
              {
-        ctx.expect_optional_equal(calculator::powd(0.0, 5.0), 0.0);
-        ctx.expect_optional_equal(calculator::powd(5.0, 0.0), 1.0);
-        ctx.expect_optional_equal(calculator::powd(0.0, 0.0), 1.0); });
+        ctx.expect_optional_equal(calculator::eval_line("-3 + 4"), 1.0);
+        ctx.expect_optional_equal(calculator::eval_line("5 - -2"), 7.0);
+        ctx.expect_optional_equal(calculator::eval_line("-2 * 3"), -6.0);
+        ctx.expect_optional_equal(calculator::eval_line("-10 / 2"), -5.0); });
 
-    // Тесты для функции logb
-    RUN_TEST("logb_normal", [](test_utils::TestContext &ctx)
+    RUN_TEST("calculator::eval_line_decimal_numbers", [](test_utils::TestContext &ctx)
              {
-        ctx.expect_optional_equal(calculator::logb(8.0, 2.0), 3.0);
-        ctx.expect_optional_equal(calculator::logb(9.0, 3.0), 2.0);
-        ctx.expect_optional_equal(calculator::logb(100.0, 10.0), 2.0); });
+        ctx.expect_optional_equal(calculator::eval_line("1.5 + 2.5"), 4.0);
+        ctx.expect_optional_equal(calculator::eval_line("3.14 * 2"), 6.28);
+        ctx.expect_optional_equal(calculator::eval_line("7.5 / 2.5"), 3.0);
+        ctx.expect_optional_equal(calculator::eval_line("2.5 ^ 2"), 6.25); });
 
-    RUN_TEST("logb_special", [](test_utils::TestContext &ctx)
+    RUN_TEST("calculator::eval_line_complex_expressions", [](test_utils::TestContext &ctx)
              {
-        ctx.expect_optional_equal(calculator::logb(1.0, 10.0), 0.0);
-        ctx.expect_optional_equal(calculator::logb(2.0, 2.0), 1.0);
-        ctx.expect_optional_equal(calculator::logb(0.5, 2.0), -1.0); });
+        ctx.expect_optional_equal(calculator::eval_line("0 + 0"), 0.0);
+        ctx.expect_optional_equal(calculator::eval_line("1 * 0"), 0.0);
+        ctx.expect_optional_equal(calculator::eval_line("0 / 1"), 0.0);
+        ctx.expect_optional_equal(calculator::eval_line("1 ^ 0"), 1.0); });
 
-    RUN_TEST("logb_invalid", [](test_utils::TestContext &ctx)
+    // Тесты для некорректных выражений
+    RUN_TEST("calculator::eval_line_division_by_zero", [](test_utils::TestContext &ctx)
              {
-                 ctx.expect_nullopt(calculator::logb(-1.0, 10.0)); // Отрицательное значение
-                 ctx.expect_nullopt(calculator::logb(8.0, 1.0));   // Основание равно 1
-                 ctx.expect_nullopt(calculator::logb(8.0, 0.0));   // Основание равно 0
-                 ctx.expect_nullopt(calculator::logb(8.0, -2.0));  // Отрицательное основание
-                 ctx.expect_nullopt(calculator::logb(0.0, 10.0));  // Значение равно 0
+        ctx.expect_nullopt(calculator::eval_line("5 / 0"));
+        ctx.expect_nullopt(calculator::eval_line("10 / 0"));
+        ctx.expect_nullopt(calculator::eval_line("0 / 0")); });
+
+    RUN_TEST("calculator::eval_line_invalid_operations", [](test_utils::TestContext &ctx)
+             {
+                 ctx.expect_nullopt(calculator::eval_line("3 & 4")); // Неподдерживаемая операция
+                 ctx.expect_nullopt(calculator::eval_line("3 @ 4")); // Неподдерживаемая операция
+                 ctx.expect_nullopt(calculator::eval_line("3 # 4")); // Неподдерживаемая операция
              });
 
-    RUN_TEST("logb_decimal", [](test_utils::TestContext &ctx)
+    RUN_TEST("calculator::eval_line_invalid_syntax", [](test_utils::TestContext &ctx)
              {
-        ctx.expect_optional_equal(calculator::logb(2.0, 4.0), 0.5);
-        ctx.expect_optional_equal(calculator::logb(0.25, 2.0), -2.0); });
-
-    // Тесты для функции square_root
-    RUN_TEST("square_root_normal", [](test_utils::TestContext &ctx)
-             {
-        ctx.expect_optional_equal(calculator::square_root(4.0), 2.0);
-        ctx.expect_optional_equal(calculator::square_root(9.0), 3.0);
-        ctx.expect_optional_equal(calculator::square_root(16.0), 4.0);
-        ctx.expect_optional_equal(calculator::square_root(0.0), 0.0); });
-
-    RUN_TEST("square_root_decimal", [](test_utils::TestContext &ctx)
-             {
-        ctx.expect_optional_equal(calculator::square_root(2.25), 1.5);
-        ctx.expect_optional_equal(calculator::square_root(0.25), 0.5);
-        ctx.expect_optional_equal(calculator::square_root(6.25), 2.5); });
-
-    RUN_TEST("square_root_negative", [](test_utils::TestContext &ctx)
-             {
-        ctx.expect_nullopt(calculator::square_root(-1.0));
-        ctx.expect_nullopt(calculator::square_root(-4.0));
-        ctx.expect_nullopt(calculator::square_root(-0.1)); });
-
-    RUN_TEST("square_root_large_numbers", [](test_utils::TestContext &ctx)
-             {
-        ctx.expect_optional_equal(calculator::square_root(1000000.0), 1000.0);
-        ctx.expect_optional_equal(calculator::square_root(100.0), 10.0); });
-
-    // Тесты для функции factorial
-    RUN_TEST("factorial_normal", [](test_utils::TestContext &ctx)
-             {
-                 ctx.expect_optional_equal(calculator::factorial(0.0), 1.0);   // 0! = 1
-                 ctx.expect_optional_equal(calculator::factorial(1.0), 1.0);   // 1! = 1
-                 ctx.expect_optional_equal(calculator::factorial(2.0), 2.0);   // 2! = 2
-                 ctx.expect_optional_equal(calculator::factorial(3.0), 6.0);   // 3! = 6
-                 ctx.expect_optional_equal(calculator::factorial(4.0), 24.0);  // 4! = 24
-                 ctx.expect_optional_equal(calculator::factorial(5.0), 120.0); // 5! = 120
+                 ctx.expect_nullopt(calculator::eval_line("foo"));         // Не числовое выражение
+                 ctx.expect_nullopt(calculator::eval_line("3 +"));         // Неполное выражение
+                 ctx.expect_nullopt(calculator::eval_line("+ 3"));         // Неполное выражение
+                 ctx.expect_nullopt(calculator::eval_line("3 + 4 extra")); // Лишние символы
+                 ctx.expect_nullopt(calculator::eval_line("3 + 4 + 5"));   // Слишком много операндов
              });
 
-    RUN_TEST("factorial_larger_numbers", [](test_utils::TestContext &ctx)
+    RUN_TEST("calculator::eval_line_invalid_power", [](test_utils::TestContext &ctx)
              {
-                 ctx.expect_optional_equal(calculator::factorial(6.0), 720.0);      // 6! = 720
-                 ctx.expect_optional_equal(calculator::factorial(7.0), 5040.0);     // 7! = 5040
-                 ctx.expect_optional_equal(calculator::factorial(8.0), 40320.0);    // 8! = 40320
-                 ctx.expect_optional_equal(calculator::factorial(10.0), 3628800.0); // 10! = 3628800
+                 ctx.expect_nullopt(calculator::eval_line("-2 ^ 0.5")); // Корень из отрицательного числа
+                 ctx.expect_nullopt(calculator::eval_line("-1 ^ 0.5")); // Корень из отрицательного числа
              });
 
-    RUN_TEST("factorial_invalid", [](test_utils::TestContext &ctx)
+    RUN_TEST("calculator::eval_line_invalid_logarithm", [](test_utils::TestContext &ctx)
              {
-                 ctx.expect_nullopt(calculator::factorial(-1.0)); // Отрицательное число
-                 ctx.expect_nullopt(calculator::factorial(-5.0)); // Отрицательное число
-                 ctx.expect_nullopt(calculator::factorial(1.5));  // Нецелое число
-                 ctx.expect_nullopt(calculator::factorial(3.7));  // Нецелое число
-                 ctx.expect_nullopt(calculator::factorial(0.1));  // Нецелое число
+                 ctx.expect_nullopt(calculator::eval_line("-1 l 10")); // Логарифм отрицательного числа
+                 ctx.expect_nullopt(calculator::eval_line("8 l 1"));   // Логарифм по основанию 1
+                 ctx.expect_nullopt(calculator::eval_line("8 l 0"));   // Логарифм по основанию 0
+                 ctx.expect_nullopt(calculator::eval_line("0 l 10"));  // Логарифм нуля
              });
 
-    RUN_TEST("factorial_large_numbers", [](test_utils::TestContext &ctx)
+    RUN_TEST("calculator::eval_line_invalid_sqrt", [](test_utils::TestContext &ctx)
              {
-                 // Тестируем граничные случаи
-                 ctx.expect_optional_equal(calculator::factorial(15.0), 1307674368000.0); // 15! = 1307674368000
-                 ctx.expect_nullopt(calculator::factorial(171.0));                        // Слишком большое число
-                 ctx.expect_nullopt(calculator::factorial(200.0));                        // Слишком большое число
+                 ctx.expect_nullopt(calculator::eval_line("sqrt -1"));  // Корень из отрицательного числа
+                 ctx.expect_nullopt(calculator::eval_line("sqrt -4"));  // Корень из отрицательного числа
+                 ctx.expect_nullopt(calculator::eval_line("sqrt"));     // Нет значения после sqrt
+                 ctx.expect_nullopt(calculator::eval_line("sqrt 4 5")); // Лишние символы после sqrt
              });
 
-    RUN_TEST("factorial_precision", [](test_utils::TestContext &ctx)
+    RUN_TEST("calculator::eval_line_invalid_factorial", [](test_utils::TestContext &ctx)
              {
-                 // Тестируем точность для чисел с плавающей точкой
-                 ctx.expect_optional_equal(calculator::factorial(5.0), 120.0);       // Точно 5.0
-                 ctx.expect_optional_equal(calculator::factorial(5.0000001), 120.0); // Почти 5.0
-                 ctx.expect_optional_equal(calculator::factorial(4.9999999), 120.0); // Почти 5.0
-                 ctx.expect_nullopt(calculator::factorial(5.1));                     // Слишком далеко от целого
-                 ctx.expect_nullopt(calculator::factorial(5.5));                     // Половина
+                 ctx.expect_nullopt(calculator::eval_line("factorial -1"));  // Факториал отрицательного числа
+                 ctx.expect_nullopt(calculator::eval_line("factorial 1.5")); // Факториал нецелого числа
+                 ctx.expect_nullopt(calculator::eval_line("factorial"));     // Нет значения после factorial
+                 ctx.expect_nullopt(calculator::eval_line("factorial 5 6")); // Лишние символы после factorial
+                 ctx.expect_nullopt(calculator::eval_line("factorial 200")); // Слишком большое число
              });
 
-    // Тесты для функции factorial
-    RUN_TEST("factorial_normal", [](test_utils::TestContext &ctx)
+    RUN_TEST("calculator::eval_line_nan_handling", [](test_utils::TestContext &ctx)
              {
-                 ctx.expect_optional_equal(factorial(0.0), 1.0);   // 0! = 1
-                 ctx.expect_optional_equal(factorial(1.0), 1.0);   // 1! = 1
-                 ctx.expect_optional_equal(factorial(2.0), 2.0);   // 2! = 2
-                 ctx.expect_optional_equal(factorial(3.0), 6.0);   // 3! = 6
-                 ctx.expect_optional_equal(factorial(4.0), 24.0);  // 4! = 24
-                 ctx.expect_optional_equal(factorial(5.0), 120.0); // 5! = 120
+                 // Тестируем обработку NaN в различных операциях
+                 ctx.expect_nullopt(calculator::eval_line("nan + 1"));       // NaN в бинарных операциях
+                 ctx.expect_nullopt(calculator::eval_line("1 + nan"));       // NaN в бинарных операциях
+                 ctx.expect_nullopt(calculator::eval_line("sqrt nan"));      // NaN в унарных операциях
+                 ctx.expect_nullopt(calculator::eval_line("factorial nan")); // NaN в унарных операциях
              });
 
-    RUN_TEST("factorial_larger_numbers", [](test_utils::TestContext &ctx)
+    RUN_TEST("calculator::eval_line_edge_cases", [](test_utils::TestContext &ctx)
              {
-                 ctx.expect_optional_equal(factorial(6.0), 720.0);      // 6! = 720
-                 ctx.expect_optional_equal(factorial(7.0), 5040.0);     // 7! = 5040
-                 ctx.expect_optional_equal(factorial(8.0), 40320.0);    // 8! = 40320
-                 ctx.expect_optional_equal(factorial(10.0), 3628800.0); // 10! = 3628800
+                 ctx.expect_nullopt(calculator::eval_line(""));            // Пустая строка
+                 ctx.expect_nullopt(calculator::eval_line("   "));         // Только пробелы
+                 ctx.expect_nullopt(calculator::eval_line("3.14.15 + 2")); // Некорректное число
+                 ctx.expect_nullopt(calculator::eval_line("3 + 4.5.6"));   // Некорректное число
              });
 
-    RUN_TEST("factorial_invalid", [](test_utils::TestContext &ctx)
+    RUN_TEST("calculator::eval_line_whitespace_handling", [](test_utils::TestContext &ctx)
              {
-                 ctx.expect_nullopt(factorial(-1.0)); // Отрицательное число
-                 ctx.expect_nullopt(factorial(-5.0)); // Отрицательное число
-                 ctx.expect_nullopt(factorial(1.5));  // Нецелое число
-                 ctx.expect_nullopt(factorial(3.7));  // Нецелое число
-                 ctx.expect_nullopt(factorial(0.1));  // Нецелое число
-             });
-
-    RUN_TEST("factorial_large_numbers", [](test_utils::TestContext &ctx)
-             {
-                 // Тестируем граничные случаи
-                 ctx.expect_optional_equal(factorial(15.0), 1307674368000.0); // 15! = 1307674368000
-                 ctx.expect_nullopt(factorial(171.0));                        // Слишком большое число
-                 ctx.expect_nullopt(factorial(200.0));                        // Слишком большое число
+                 ctx.expect_optional_equal(calculator::eval_line(" 3 + 4 "), 7.0);     // Пробелы вокруг
+                 ctx.expect_optional_equal(calculator::eval_line("3  +  4"), 7.0);     // Множественные пробелы
+                 ctx.expect_optional_equal(calculator::eval_line("\t3\t+\t4\t"), 7.0); // Табуляция
              });
 
     if (failures == 0)
     {
-        std::cout << "✓ Все тесты продвинутых операций прошли: " << checks << " проверок\n";
+        std::cout << "✓ Все интеграционные тесты прошли: " << checks << " проверок\n";
     }
     else
     {
