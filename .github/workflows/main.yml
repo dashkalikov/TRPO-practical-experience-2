@@ -1,8 +1,8 @@
 name: C++ CI
 
 on:
-  push:          # автозапуск при каждом push
-  pull_request:  # автозапуск на PR
+  push:           # автозапуск при каждом push
+  pull_request:   # автозапуск на PR
 
 jobs:
   build:
@@ -10,7 +10,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        compiler: [gcc, clang] # gcc и clang с самого начала
+        compiler: [gcc, clang]  # gcc и clang с самого начала
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -31,3 +31,21 @@ jobs:
 
       - name: Build
         run: cmake --build build --parallel
+
+      - name: Run Tests
+        run: |
+          cd build
+          echo "=== Запуск всех тестов через CTest ==="
+          ctest --output-on-failure --verbose
+          
+          echo "=== Запуск модульных тестов ==="
+          ./test_basic_operations
+          ./test_advanced_operations
+          
+          echo "=== Запуск интеграционных тестов ==="
+          ./test_eval_line
+          
+          echo "=== Запуск тестов граничных случаев ==="
+          ./test_boundary_conditions
+          
+          echo "=== Все тесты завершены успешно! ==="
